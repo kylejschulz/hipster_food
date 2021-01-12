@@ -17,6 +17,7 @@ class EventTest < Minitest::Test
     @food_truck2.stock(@item3, 25)
     @food_truck3 = FoodTruck.new("Palisade Peach Shack")#=> #<FoodTruck:0x00007fe134910650...>
     @food_truck3.stock(@item1, 65)
+    @food_truck3.stock(@item3, 10)
     @event = Event.new("South Pearl Street Farmers Market")#=> #<Event:0x00007fe134933e20...>
   end
 
@@ -51,10 +52,54 @@ class EventTest < Minitest::Test
     @event.add_food_truck(@food_truck1)
     @event.add_food_truck(@food_truck2)
     @event.add_food_truck(@food_truck3)
-    
+
     assert_equal [@food_truck1, @food_truck3], @event.food_trucks_that_sell(@item1)
     assert_equal [@food_truck2], @event.food_trucks_that_sell(@item4)
   end
 
+  def test_it_can_return_total_inventory
+    #i don't know why this isn't passing
+    @event.add_food_truck(@food_truck1)
+    @event.add_food_truck(@food_truck2)
+    @event.add_food_truck(@food_truck3)
+    expected = {
+                  @item1 => {
+                    quantity: 100,
+                    food_trucks: [@food_truck1, @food_truck3]
+                  },
+                  @item2=> {
+                    quantity: 7,
+                    food_trucks: [@food_truck1]
+                  },
+                  @item4=> {
+                    quantity: 50,
+                    food_trucks: [@food_truck2]
+                  },
+                  @item3 => {
+                    quantity: 35,
+                    food_trucks: [@food_truck1, @food_truck3]
+                  },
+                }
 
+    assert_equal expected.length, @event.total_inventory.length
+    assert_equal [@food_truck1, @food_truck3], @event.total_inventory.values.first[:food_trucks]
+    assert_equal expected, @event.total_inventory
+  end
+
+  def test_it_can_id_overstocked_items
+    @event.add_food_truck(@food_truck1)
+    @event.add_food_truck(@food_truck2)
+    @event.add_food_truck(@food_truck3)
+
+    assert_equal [@item1], @event.overstocked_items
+  end
+
+  def test_it_can_sort_item_list
+    @event.add_food_truck(@food_truck1)
+    @event.add_food_truck(@food_truck2)
+    @event.add_food_truck(@food_truck3)
+    assert_equal ["Apple Pie (Slice)", "Banana Nice Cream", "Peach Pie (Slice)", "Peach-Raspberry Nice Cream"], @event.sorted_item_list
+  end
 end
+
+#
